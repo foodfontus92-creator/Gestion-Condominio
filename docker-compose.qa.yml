@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  db-qa:
+    image: postgres:15-alpine
+    container_name: condominio-db-qa
+    environment:
+      POSTGRES_USER: condominio_qa
+      POSTGRES_PASSWORD: condominio_qa_2026
+      POSTGRES_DB: condominio_qa
+    ports:
+      - "5433:5432"
+    volumes:
+      - condominio_qa_data:/var/lib/postgresql/data
+    networks:
+      - condominio-qa-network
+
+  backend-qa:
+    build:
+      context: ./backend-spring-boot
+      dockerfile: Dockerfile
+    container_name: condominio-backend-qa
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-qa:5432/condominio_qa
+      SPRING_DATASOURCE_USERNAME: condominio_qa
+      SPRING_DATASOURCE_PASSWORD: condominio_qa_2026
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      APP_JWT_SECRET: condominio-qa-secret-key-256-bits-minimum-length
+      APP_JWT_EXPIRATION: 86400000
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:5173,http://qa.condominio.local,https://qa.condominio.local
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db-qa
+    networks:
+      - condominio-qa-network
+    restart: unless-stopped
+
+  frontend-qa:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: condominio-frontend-qa
+    environment:
+      VITE_API_URL: http://localhost:8081/api
+    ports:
+      - "5175:5173"
+    depends_on:
+      - backend-qa
+    networks:
+      - condominio-qa-network
+    restart: unless-stopped
+
+networks:
+  condominio-qa-network:
+    driver: bridge
+
+volumes:
+  condominio_qa_data:

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Mail, Lock, User as UserIcon, AlertTriangle } from "lucide-react";
@@ -13,7 +13,11 @@ export default function Login() {
   const navigate = useNavigate();
   const { login, register, isAuthenticated } = useAuth();
 
-  if (isAuthenticated) navigate("/dashboard");
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
