@@ -5,8 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import models
 from app.api import router
-from app.config import settings
-from app.database import engine
+from app.database import engine, SessionLocal
 from app import seed
 
 app = FastAPI(title="Condominio 3D Dashboard")
@@ -25,7 +24,7 @@ app.include_router(router, prefix="/api")
 @app.on_event("startup")
 def startup():
     models.Base.metadata.create_all(bind=engine)
-    seed.seed(engine)
+    seed.seed(SessionLocal())
 
 
 @app.get("/health")

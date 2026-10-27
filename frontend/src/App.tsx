@@ -34,7 +34,6 @@ export default function App() {
         api.getApartments(),
       ]);
 
-      // Merge apartments into buildings
       const merged: BuildingData[] = buildingsResp.map((b) => ({
         id: b.id,
         code: b.code,
@@ -47,12 +46,20 @@ export default function App() {
         })),
       }));
 
-      // Also add any apartments not yet in buildings (edge case)
-      const aptMap = new Map(merged.flatMap((b) => b.apartments.map((a) => [a.id, a])));
+      const aptMap = new Map(
+        merged.flatMap((b) => b.apartments.map((a) => [a.id, a]))
+      );
       apartmentsResp.forEach((a) => {
         if (!aptMap.has(a.id)) {
           const b = merged.find((x) => x.id === a.building_id);
-          if (b) b.apartments.push({ id: a.id, number: a.number, status: a.status, buildingId: a.building_id });
+          if (b) {
+            b.apartments.push({
+              id: a.id,
+              number: a.number,
+              status: a.status,
+              buildingId: a.building_id,
+            });
+          }
         }
       });
 
@@ -60,7 +67,6 @@ export default function App() {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error cargando datos");
-      // Fallback to mock data so the UI is still visible
       setBuildings([
         { id: "bldg-A", code: "A", status: "active", apartments: Array.from({ length: 9 }, (_, i) => ({ id: `A-${101 + i}`, number: 101 + i, status: "active", buildingId: "bldg-A" })) },
         { id: "bldg-B", code: "B", status: "active", apartments: Array.from({ length: 9 }, (_, i) => ({ id: `B-${101 + i}`, number: 101 + i, status: "active", buildingId: "bldg-B" })) },
@@ -79,8 +85,9 @@ export default function App() {
 
   const findApartment = useCallback(
     (id: string, number: number) =>
-      buildings.flatMap((b) => b.apartments.find((a) => a.id === id && a.number === number))[0] ??
-      null,
+      buildings.flatMap((b) =>
+        b.apartments.find((a) => a.id === id && a.number === number)
+      )[0] ?? null,
     [buildings]
   );
 
@@ -95,7 +102,7 @@ export default function App() {
           status: created.status,
           apartments: [],
         },
-      });
+      ]);
       setAddOpen(false);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Error creando bloque");
@@ -106,7 +113,9 @@ export default function App() {
     try {
       await api.suppressBuilding(buildingId);
       setBuildings((prev) =>
-        prev.map((b) => (b.id === buildingId ? { ...b, status: "suppressed" } : b))
+        prev.map((b) =>
+          b.id === buildingId ? { ...b, status: "suppressed" } : b
+        )
       );
     } catch (err) {
       alert(err instanceof Error ? err.message : "Error suprimiendo bloque");

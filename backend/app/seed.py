@@ -2,18 +2,17 @@
 
 Inserts the initial dataset: 5 buildings (bloques) with 9 apartments
 (departamentos) each, all in ``active`` status.
-
-Usage:
-    from app.seed import seed
-
-    seed(engine)
 """
 
 from uuid import uuid4
 
 from sqlalchemy import create_engine, text
+from sqlalchemy.orm import Session
 
-# (building_code, apartment_numbers)
+from app.config import settings
+from app.database import SessionLocal, engine
+from app.models import Building, Apartment
+
 SEED_BUILDINGS: list[tuple[str, list[int]]] = [
     ("A", [101, 102, 103, 104, 105, 106, 107, 108, 109]),
     ("B", [101, 102, 103, 104, 105, 106, 107, 108, 109]),
@@ -23,35 +22,40 @@ SEED_BUILDINGS: list[tuple[str, list[int]]] = [
 ]
 
 
-def seed(engine) -> None:
+def seed(db: Session | None = None) -> None:
     """Insert initial buildings + apartments if the tables are empty.
 
     Idempotent: safe to run multiple times. Only seeds when no buildings
     exist yet (initial seed guard).
     """
-    with engine.begin() as conn:
-        exists = conn.execute(text("SELECT EXISTS (SELECT 1 FROM buildings)")).scalar()
+    own_session = db is None
+    if own_session:
+        db = SessionLocal()
+
+    try:
+        exists = db.query(Building).first()
         if exists:
             return
 
         for code, numbers in SEED_BUILDINGS:
-            building_id = str(uuid4())
-            conn.execute(
-                text(
-                    "INSERT INTO buildings (id, code, status, created_at, updated_at) "
-                    "VALUES (:id, :code, 'active', now(), now())"
-                ),
-                {"id": building_id, "code": code},
-            )
+            building = Building(id=uuid4(), code=code, status="active")
+            db.add(building)
+            db.flush()
             for number in numbers:
-                conn.execute(
-                    text(
-                        "INSERT INTO apartments (id, building_id, number, status, created_at, updated_at) "
-                        "VALUES (:id, :building_id, :number, 'active', now(), now())"
-                    ),
-                    {
-                        "id": str(uuid4()),
-                        "building_id": building_id,
-                        "number": number,
-                    },
+                apartment = Apartment(
+                    id=uuid4(),
+                    building_id=building.id,
+                    number=number,
+                    status="active",
                 )
+                db.add(apartment)
+
+        db.commit()
+    finally:
+        if own_session:
+            db.close()
+
+
+def seed_from_engine() -> None:
+    """Compatibilidad: ejecuta seed usando el engine global."""
+    seed(SessionLocal())
