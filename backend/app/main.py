@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import models
 from app.api import router
+from app.config import settings
 from app.database import engine
 from app import seed
 
