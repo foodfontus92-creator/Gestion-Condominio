@@ -1,11 +1,22 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { api, type User } from "../services/api";
 
 type AuthContextType = {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { email: string; password: string; full_name: string; role?: string }) => Promise<void>;
+  register: (data: {
+    email: string;
+    password: string;
+    full_name: string;
+    role?: string;
+  }) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -32,13 +43,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const res = await api.login({ email, password });
-    localStorage.setItem("token", res.access_token);
-    localStorage.setItem("user", JSON.stringify(res.user || { email, role: "residente" }));
-    setToken(res.access_token);
-    setUser(res.user || ({ email, role: "residente" } as User));
+
+    console.log("LOGIN RESPONSE:", res);
+
+    localStorage.setItem("token", res.accessToken);
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(
+        res.user || {
+          email,
+          role: "residente",
+        },
+      ),
+    );
+
+    setToken(res.accessToken);
+
+    setUser(
+      res.user ||
+        ({
+          email,
+          role: "residente",
+        } as User),
+    );
   };
 
-  const register = async (data: { email: string; password: string; full_name: string; role?: string }) => {
+  const register = async (data: {
+    email: string;
+    password: string;
+    full_name: string;
+    role?: string;
+  }) => {
     await api.register(data);
     await login(data.email, data.password);
   };
@@ -60,7 +96,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isAuthenticated, hasRole, hasAnyRole }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        register,
+        logout,
+        isAuthenticated,
+        hasRole,
+        hasAnyRole,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
