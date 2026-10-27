@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import * as THREE from "three";
-import { api, type Building, type Apartment } from "../services/api";
+import { type Building, type Apartment } from "../services/api";
 
 const FLOOR_HEIGHT = 4;
 const FLOORS = 3;
@@ -16,12 +16,12 @@ interface Building3DProps {
 }
 
 const COLORS: Record<string, number> = {
-  active: 0x22c55e,        // green
-  suppressed: 0xef4444,    // red
-  occupied: 0x3b82f6,      // blue
-  vacant: 0x94a3b8,        // gray
-  overdue: 0xef4444,       // red
-  pending: 0xf59e0b,       // amber
+  active: 0x22c55e,
+  suppressed: 0xef4444,
+  occupied: 0x3b82f6,
+  vacant: 0x94a3b8,
+  overdue: 0xef4444,
+  pending: 0xf59e0b,
 };
 
 function getApartmentColor(apt: Apartment): number {
@@ -31,6 +31,14 @@ function getApartmentColor(apt: Apartment): number {
   if (apt.occupants?.length) return COLORS.occupied;
   return COLORS.vacant;
 }
+
+const EmptyBuildings = () => (
+  <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-slate-400">
+    <div className="text-4xl mb-4">🏢</div>
+    <h3 className="text-lg font-medium">No hay edificios cargados</h3>
+    <p className="text-sm">No se pudieron cargar los edificios del condominio.</p>
+  </div>
+);
 
 function ApartmentWindow({
   apt,
@@ -48,7 +56,6 @@ function ApartmentWindow({
   const color = getApartmentColor(apt);
   const isOccupied = apt.occupants?.length > 0;
   const hasOverdue = apt.payments?.some((p) => p.status === "overdue");
-  const hasPending = apt.payments?.some((p) => p.status === "pending");
 
   return (
     <mesh
@@ -81,9 +88,10 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
   const [activeBuilding, setActiveBuilding] = useState<Building | null>(null);
   const cameraRef = useRef<THREE.Camera>(null!);
 
-  useEffect(() => {
-    if (buildings.length > 0) setActiveBuilding(buildings[0]);
-  }, [buildings]);
+  // Auto-seleccionar el primer edificio al cargar
+  if (buildings.length > 0 && !activeBuilding) {
+    setActiveBuilding(buildings[0]);
+  }
 
   const building = activeBuilding;
   const apartments = building?.apartments.flat() || [];
@@ -95,6 +103,20 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
     apartmentsByFloor[floor].push(apt);
   });
 
+  if (!buildings || buildings.length === 0 || !building) {
+    return (
+      <div className="h-full w-full bg-slate-900 flex flex-col">
+        <div className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-6 z-20">
+          <h1 className="text-xl font-bold text-white flex items-center gap-2">
+            🏢 Condominio 3D Dashboard
+          </h1>
+          <div className="text-sm text-red-400">No hay edificios disponibles</div>
+        </div>
+        <EmptyBuildings />
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full bg-slate-900 flex flex-col">
       {/* Floor controls */}
@@ -102,7 +124,7 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
         <div className="flex items-center gap-4">
           <span className="text-sm text-slate-400">Bloque:</span>
           <select
-            value={building?.code || ""}
+            value={building.code}
             onChange={(e) => setActiveBuilding(buildings.find((b) => b.code === e.target.value) || null)}
             className="bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white text-sm"
           >
@@ -130,7 +152,7 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
           </div>
         </div>
         <div className="text-sm text-slate-400">
-          {building?.code} - Piso {selectedFloor + 1} - {apartmentsByFloor[selectedFloor]?.length || 0} departamentos
+          {building.code} - Piso {selectedFloor + 1} - {apartmentsByFloor[selectedFloor]?.length || 0} departamentos
         </div>
       </div>
 
@@ -155,35 +177,33 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
             <meshStandardMaterial color={0x1e293b} />
           </mesh>
 
-          {building && (
-            <group position={[0, 0, 0]}>
-              {/* Building base */}
-              <mesh castShadow receiveShadow position={[0, FLOOR_HEIGHT / 2, 0]}>
-                <boxGeometry args={[BUILDING_WIDTH, FLOOR_HEIGHT * FLOORS, BUILDING_DEPTH]} />
-                <meshStandardMaterial color={0x64748b} roughness={0.6} metalness={0.2} />
-              </mesh>
+          <group position={[0, 0, 0]}>
+            {/* Building base */}
+            <mesh castShadow receiveShadow position={[0, FLOOR_HEIGHT / 2, 0]}>
+              <boxGeometry args={[BUILDING_WIDTH, FLOOR_HEIGHT * FLOORS, BUILDING_DEPTH]} />
+              <meshStandardMaterial color={0x64748b} roughness={0.6} metalness={0.2} />
+            </mesh>
 
-              {/* Windows for current floor */}
-              {apartmentsByFloor[selectedFloor]?.map((apt, i) => {
-                const col = i % COLS_PER_FLOOR;
-                const row = Math.floor(i / COLS_PER_FLOOR);
-                const x = (col - 1) * 2;
-                const y = selectedFloor * FLOOR_HEIGHT + FLOOR_HEIGHT / 2;
-                const z = 3.1;
+            {/* Windows for current floor */}
+            {apartmentsByFloor[selectedFloor]?.map((apt, i) => {
+              const col = i % COLS_PER_FLOOR;
+              const row = Math.floor(i / COLS_PER_FLOOR);
+              const x = (col - 1) * 2;
+              const y = selectedFloor * FLOOR_HEIGHT + FLOOR_HEIGHT / 2;
+              const z = 3.1;
 
-                return (
-                  <ApartmentWindow
-                    key={apt.id}
-                    apt={apt}
-                    x={x}
-                    y={y}
-                    z={z}
-                    onClick={onApartmentSelect}
-                  />
-                );
-              })}
-            </group>
-          )}
+              return (
+                <ApartmentWindow
+                  key={apt.id}
+                  apt={apt}
+                  x={x}
+                  y={y}
+                  z={z}
+                  onClick={onApartmentSelect}
+                />
+              );
+            })}
+          </group>
         </Canvas>
 
         {/* Floor info overlay */}
@@ -192,13 +212,22 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
           <div className="space-y-2 text-sm">
             {apartmentsByFloor[selectedFloor]?.map((apt) => (
               <div key={apt.id} className="flex items-center gap-2 p-2 rounded bg-slate-900/50 border border-slate-700/50">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: `rgb(${getApartmentColor(apt) >> 16},${(getApartmentColor(apt) >> 8) & 255},${getApartmentColor(apt) & 255})` }} />
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{
+                    backgroundColor: `rgb(${getApartmentColor(apt) >> 16},${(getApartmentColor(apt) >> 8) & 255},${getApartmentColor(apt) & 255})`,
+                  }}
+                />
                 <span className="text-slate-300 font-mono">{apt.number}</span>
                 {apt.payments?.some((p) => p.status === "overdue") && (
-                  <span className="ml-auto text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">Moroso</span>
+                  <span className="ml-auto text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">
+                    Moroso
+                  </span>
                 )}
                 {apt.occupants?.length && (
-                  <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">Ocupado</span>
+                  <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">
+                    Ocupado
+                  </span>
                 )}
               </div>
             ))}

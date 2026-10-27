@@ -112,26 +112,66 @@ type AuthUser = {
   apartment_id?: string;
 };
 
+export type ApiError = {
+  message: string;
+  status?: number;
+  isNetworkError: boolean;
+};
+
 async function request(path: string, options: RequestInit = {}): Promise<Response> {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-    ...options,
-  });
-  if (res.status === 401) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(text || `Error ${res.status}`);
+    }
+    return res;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === "AbortError") {
+      throw new Error("El servidor no responde (timeout)");
+    }
+    if (err.message === "Failed to fetch") {
+      throw new Error("No se puede conectar al backend. ¿Está el servidor en ejecución?");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Error ${res.status}`);
+}
+
+// Helper para envolver llamadas a la API con manejo de errores
+async function apiCall<T>(fn: () => Promise<T>): Promise<{ data: T | null; error: ApiError | null }> {
+  try {
+    const data = await fn();
+    return { data, error: null };
+  } catch (err: any) {
+    return {
+      data: null,
+      error: {
+        message: err.message || "Error desconocido",
+        isNetworkError: err.message.includes("conectar") || err.message.includes("timeout"),
+      },
+    };
   }
-  return res;
 }
 
 export const api = {
@@ -227,4 +267,7 @@ export const api = {
 
   // Dashboard
   getMetrics: () => request("/api/v2/dashboard/metrics").then((r) => r.json()),
+
+  // Helper
+  apiCall,
 };

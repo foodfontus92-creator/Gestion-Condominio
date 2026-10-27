@@ -49,17 +49,70 @@ function BuildingPage(): JSX.Element {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [selectedApt, setSelectedApt] = useState<Apartment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     api.getBuildings()
       .then((data) => {
         setBuildings(data);
+        setError(null);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        setError(err.message || "No se pudieron cargar los edificios");
+        setLoading(false);
+      });
   }, []);
 
-  if (loading) return <div className="h-full flex items-center justify-center text-slate-400">Cargando edificio...</div>;
+  if (loading) {
+    return (
+      <Layout>
+        <div className="h-full flex items-center justify-center text-slate-400">
+          Cargando edificio...
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 max-w-md">
+            <h3 className="text-lg font-bold text-red-400 mb-2">Error de conexión</h3>
+            <p className="text-sm text-red-300 mb-4">{error}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setError(null);
+                  setLoading(true);
+                  api.getBuildings()
+                    .then((data) => {
+                      setBuildings(data);
+                      setError(null);
+                      setLoading(false);
+                    })
+                    .catch((e) => {
+                      setError(e.message || "Error al recargar");
+                      setLoading(false);
+                    });
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              >
+                Reintentar
+              </button>
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+              >
+                Ir al Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
