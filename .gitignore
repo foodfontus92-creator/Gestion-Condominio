@@ -1,0 +1,27 @@
+# Dependencias
+node_modules/
+__pycache__/
+*.pyc
+.env
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Build
+dist/
+build/
+.vite/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Logs
+*.log
