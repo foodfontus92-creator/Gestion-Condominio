@@ -112,7 +112,10 @@ type AuthUser = {
   apartment_id?: string;
 };
 
-async function request(path: string, options: RequestInit = {}): Promise<Response> {
+async function request(
+  path: string,
+  options: RequestInit = {},
+): Promise<Response> {
   const token = localStorage.getItem("token");
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
@@ -137,72 +140,82 @@ async function request(path: string, options: RequestInit = {}): Promise<Respons
 export const api = {
   // Auth
   login: (data: AuthUser) =>
-    request("/api/v2/auth/login", { method: "POST", body: JSON.stringify(data) }).then(
-      (r) => r.json()
-    ),
+    request("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
   register: (data: AuthUser) =>
-    request("/api/v2/auth/register", { method: "POST", body: JSON.stringify(data) }).then(
-      (r) => r.json()
-    ),
-  me: () => request("/api/v2/auth/me").then((r) => r.json()),
+    request("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+  me: () => request("/api/auth/me").then((r) => r.json()),
 
   // Buildings
-  getBuildings: () => request("/api/buildings").then((r) => r.json()),
-  getApartments: () => request("/api/apartments").then((r) => r.json()),
+  getBuildings: () => request("/api/auth/buildings").then((r) => r.json()),
+  getApartments: () => request("/api/auth/apartments").then((r) => r.json()),
 
   // Occupants
   getOccupants: (apartmentId: string) =>
-    request(`/api/v2/apartments/${apartmentId}/occupants`).then((r) => r.json()),
+    request(`/api/auth/apartments/${apartmentId}/occupants`).then((r) =>
+      r.json(),
+    ),
   createOccupant: (data: Occupant & { apartment_id: string }) =>
-    request("/api/v2/occupants", {
+    request("/api/auth/occupants", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
   // Payments
   getPayments: (apartmentId: string) =>
-    request(`/api/v2/apartments/${apartmentId}/payments`).then((r) => r.json()),
+    request(`/api/auth/apartments/${apartmentId}/payments`).then((r) =>
+      r.json(),
+    ),
   createPayment: (data: Payment & { apartment_id: string }) =>
-    request("/api/v2/payments", {
+    request("/api/auth/payments", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
   updatePayment: (id: string, data: Partial<Payment>) =>
-    request(`/api/v2/payments/${id}`, {
+    request(`/api/auth/payments/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
   getPendingPayments: () =>
-    request("/api/v2/payments/pending").then((r) => r.json()),
+    request("/api/auth/payments/pending").then((r) => r.json()),
   getOverduePayments: () =>
-    request("/api/v2/payments/overdue").then((r) => r.json()),
+    request("/api/auth/payments/overdue").then((r) => r.json()),
 
   // Maintenance
   getMaintenance: (apartmentId: string) =>
-    request(`/api/v2/apartments/${apartmentId}/maintenance`).then((r) => r.json()),
+    request(`/api/auth/apartments/${apartmentId}/maintenance`).then((r) =>
+      r.json(),
+    ),
   createMaintenance: (data: MaintenanceRequest & { apartment_id: string }) =>
-    request("/api/v2/maintenance", {
+    request("/api/auth/maintenance", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
   updateMaintenance: (id: string, data: Partial<MaintenanceRequest>) =>
-    request(`/api/v2/maintenance/${id}`, {
+    request(`/api/auth/maintenance/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
   getOpenMaintenance: () =>
-    request("/api/v2/maintenance/open").then((r) => r.json()),
+    request("/api/auth/maintenance/open").then((r) => r.json()),
 
   // Common Areas
   getCommonAreas: (activeOnly = false) =>
-    request(`/api/v2/common-areas?active_only=${activeOnly}`).then((r) => r.json()),
+    request(`/api/auth/common-areas?active_only=${activeOnly}`).then((r) =>
+      r.json(),
+    ),
   createCommonArea: (data: CommonArea) =>
-    request("/api/v2/common-areas", {
+    request("/api/auth/common-areas", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
   updateCommonArea: (id: string, data: Partial<CommonArea>) =>
-    request(`/api/v2/common-areas/${id}`, {
+    request(`/api/auth/common-areas/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
@@ -210,21 +223,22 @@ export const api = {
   // Reservations
   getReservations: (commonAreaId?: string) => {
     const url = commonAreaId
-      ? `/api/v2/reservations?common_area_id=${commonAreaId}`
-      : "/api/v2/reservations";
+      ? `/api/auth/reservations?common_area_id=${commonAreaId}`
+      : "/api/auth/reservations";
     return request(url).then((r) => r.json());
   },
   createReservation: (data: Reservation & { common_area_id: string }) =>
-    request("/api/v2/reservations", {
+    request("/api/auth/reservations", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
   updateReservation: (id: string, data: Partial<Reservation>) =>
-    request(`/api/v2/reservations/${id}`, {
+    request(`/api/auth/reservations/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
   // Dashboard
-  getMetrics: () => request("/api/v2/dashboard/metrics").then((r) => r.json()),
+  getMetrics: () =>
+    request("/api/auth/dashboard/metrics").then((r) => r.json()),
 };
