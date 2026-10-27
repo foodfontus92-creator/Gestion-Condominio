@@ -1,7 +1,7 @@
 {
   "name": "condominio-3d-dashboard",
   "private": true,
-  "version": "0.1.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,8 +13,12 @@
   "dependencies": {
     "@react-three/drei": "^9.0.0",
     "@react-three/fiber": "^8.12.0",
+    "clsx": "^2.0.0",
+    "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "recharts": "^2.10.0",
     "three": "^0.158.0"
   },
   "devDependencies": {

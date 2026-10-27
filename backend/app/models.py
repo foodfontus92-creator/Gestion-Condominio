@@ -55,6 +55,7 @@ class Apartment(Base):
     building_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("buildings.id"), nullable=False)
     number: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="active")
+    monthly_fee: Mapped[float | None] = mapped_column(nullable=True)  # expensa mensual
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=now_utc
     )
@@ -63,6 +64,10 @@ class Apartment(Base):
     )
 
     building: Mapped[Building] = relationship(back_populates="apartments")
+    users: Mapped[list["User"]] = relationship(back_populates="apartment")
+    occupants: Mapped[list["Occupant"]] = relationship(back_populates="apartment")
+    payments: Mapped[list["Payment"]] = relationship(back_populates="apartment")
+    maintenance_requests: Mapped[list["MaintenanceRequest"]] = relationship(back_populates="apartment")
 
     __table_args__ = (
         UniqueConstraint("building_id", "number", name="uq_apartments_building_number"),
