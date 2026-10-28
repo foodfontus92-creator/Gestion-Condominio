@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -129,6 +129,8 @@ function ApartmentWindow({
 export default function Building3D({ buildings, onApartmentSelect }: Building3DProps) {
   const [selectedFloor, setSelectedFloor] = useState(0);
   const [activeBuilding, setActiveBuilding] = useState<Building | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [webglError, setWebglError] = useState(false);
   const cameraRef = useRef<THREE.Camera>(null!);
 
   // Usar edificios del backend o edificios de ejemplo para que siempre se vea el 3D
@@ -161,6 +163,62 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
           <div className="text-sm text-red-400">No hay edificios disponibles</div>
         </div>
         <EmptyBuildings />
+      </div>
+    );
+  }
+
+  // Si hay error de WebGL, mostrar vista 2D de respaldo
+  if (webglError) {
+    return (
+      <div className="h-full w-full bg-slate-900 flex flex-col">
+        <div className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-6 z-20">
+          <h1 className="text-xl font-bold text-white flex items-center gap-2">
+            🏢 Condominio 3D Dashboard
+          </h1>
+          <div className="text-sm text-yellow-400">Vista 2D (WebGL no disponible)</div>
+        </div>
+        <div className="flex-1 p-6 overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {apartmentsByFloor[selectedFloor]?.map((apt) => (
+              <div
+                key={apt.id}
+                onClick={() => onApartmentSelect(apt)}
+                className="p-4 rounded-lg border border-slate-700 bg-slate-800/50 cursor-pointer hover:bg-slate-800 transition-colors group"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono font-bold text-lg">{apt.number}</span>
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-bold ${
+                      apt.status === "active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {apt.status === "active" ? "Activo" : "Fuera de servicio"}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  {apt.occupants?.length ? (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1">Ocupado</span>
+                  ) : (
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1">Vacío</span>
+                  )}
+                  {apt.payments?.some((p) => p.status === "overdue") ? (
+                    <span className="text-xs bg-red-100 text-red-700 px-2 py-1">Moroso</span>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="p-4 text-center">
+          <button
+            onClick={() => setWebglError(false)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+          >
+            Intentar cargar 3D nuevamente
+          </button>
+        </div>
       </div>
     );
   }
@@ -198,6 +256,12 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
               </button>
             ))}
           </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+          >
+            <span>+</span> Agregar Depto
+          </button>
         </div>
         <div className="text-sm text-slate-400">
           {building.code} - Piso {selectedFloor + 1} - {apartmentsByFloor[selectedFloor]?.length || 0} departamentos
@@ -211,6 +275,7 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
           camera={{ position: [15, 15, 15], fov: 45 }}
           shadows
           onCreated={({ camera }) => (cameraRef.current = camera)}
+          onError={() => setWebglError(true)}
         >
           <ambientLight intensity={0.5} />
           <directionalLight position={[10, 20, 10]} intensity={1} castShadow />
@@ -260,7 +325,7 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
           <h3 className="text-lg font-bold text-white mb-2">Piso {selectedFloor + 1}</h3>
           <div className="space-y-2 text-sm">
             {apartmentsByFloor[selectedFloor]?.map((apt) => (
-              <div key={apt.id} className="flex items-center gap-2 p-2 rounded bg-slate-900/50 border border-slate-700/50">
+              <div key={apt.id} className="flex items-center gap-2 p-2 rounded bg-slate-900/50 border border-slate-700/50 cursor-pointer hover:bg-slate-800" onClick={() => onApartmentSelect(apt)}>
                 <span
                   className="w-2 h-2 rounded-full"
                   style={{
@@ -283,6 +348,50 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
           </div>
         </div>
       </div>
+
+      {/* Agregar Departamento Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowAddModal(false)}>
+          <div className="bg-white text-black w-full max-w-md p-6 rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4">Agregar Departamento</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Número de departamento</label>
+                <input
+                  type="number"
+                  placeholder="Ej: 110"
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Piso</label>
+                <input
+                  type="number"
+                  placeholder="Ej: 1"
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-black py-2 rounded-lg font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    alert("Departamento agregado (simulación visual)");
+                  }}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium"
+                >
+                  Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
