@@ -5,8 +5,8 @@ import { Calendar, Plus, Building2, CheckCircle2, Clock } from "lucide-react";
 export default function CommonAreas() {
   const [areas, setAreas] = useState<CommonArea[]>([
     { id: "1", name: "Quincho", description: "Área de parrilla con mesas y sillas", capacity: 20, location: "Planta baja", imageUrl: "", isActive: true, createdAt: "" },
-    { id: "2", name: "Gimnasio", description: "Equipos de cardio y pesas", capacity: 10, location: "Planta baja", image_url: "", isActive: true, createdAt: "" },
-    { id: "3", name: "Salón de Eventos", description: "Salón cerrado con cocina", capacity: 50, location: "Segundo piso", image_url: "", isActive: true, createdAt: "" },
+    { id: "2", name: "Gimnasio", description: "Equipos de cardio y pesas", capacity: 10, location: "Planta baja", imageUrl: "", isActive: true, createdAt: "" },
+    { id: "3", name: "Salón de Eventos", description: "Salón cerrado con cocina", capacity: 50, location: "Segundo piso", imageUrl: "", isActive: true, createdAt: "" },
   ]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,6 @@ export default function CommonAreas() {
       setApiError(null);
     } catch (err) {
       setApiError("No se pudo conectar al servidor. Mostrando datos de ejemplo.");
-      // Mantener los datos de ejemplo iniciales
     } finally {
       setLoading(false);
     }
@@ -41,14 +40,19 @@ export default function CommonAreas() {
     e.preventDefault();
     setOpenForm(false);
     try {
-      await api.createReservation({ ...formData, commonAreaId: formData.commonAreaId });
+      await api.createReservation({
+        commonAreaId: formData.commonAreaId,
+        userId: "", // Se obtendría del usuario autenticado
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        purpose: formData.purpose,
+      });
       await loadData();
       setFormData({ commonAreaId: "", startTime: "", endTime: "", purpose: "" });
       setSelectedArea(null);
+      alert("Reserva creada exitosamente");
     } catch (err) {
-      alert("Error al crear reserva. Modo demo - reserva simulada.");
-      setFormData({ commonAreaId: "", startTime: "", endTime: "", purpose: "" });
-      setSelectedArea(null);
+      alert("Error al crear reserva. Verifique los datos.");
     }
   };
 
@@ -91,15 +95,15 @@ export default function CommonAreas() {
             <h3 className="text-lg font-bold mb-4">Registrar Área Común</h3>
             <form className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <label className="block text-sm font-medium text-black mb-1">Nombre</label>
                 <input className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Capacidad</label>
+                <label className="block text-sm font-medium text-black mb-1">Capacidad</label>
                 <input type="number" className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ubicación</label>
+                <label className="block text-sm font-medium text-black mb-1">Ubicación</label>
                 <input className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
               <div className="flex gap-2">
@@ -201,7 +205,7 @@ export default function CommonAreas() {
                         type="text"
                         value={formData.purpose}
                         onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-                        className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       />
                     </div>
                     <button

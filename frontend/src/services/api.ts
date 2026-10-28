@@ -188,7 +188,7 @@ export const api = {
 
   // Occupants
   getOccupants: (apartmentId: string) =>
-    request(`/api/v2/occupants/apartment/${apartmentId}`).then((r) => r.json()),
+    request(`/api/occupants/apartment/${apartmentId}`).then((r) => r.json()),
 
   createOccupant: (data: {
     apartmentId: string;
@@ -199,7 +199,7 @@ export const api = {
     occupantType?: string;
     isPrimary?: boolean;
   }) =>
-    request("/api/v2/occupants", {
+    request("/api/occupants", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
@@ -212,19 +212,19 @@ export const api = {
     occupantType?: string;
     isPrimary?: boolean;
   }) =>
-    request(`/api/v2/occupants/${id}`, {
+    request(`/api/occupants/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
   deleteOccupant: (id: string) =>
-    request(`/api/v2/occupants/${id}`, {
+    request(`/api/occupants/${id}`, {
       method: "DELETE",
     }).then((r) => r.json()),
 
   // Payments
   getPayments: (apartmentId: string) =>
-    request(`/api/v2/payments/apartment/${apartmentId}`).then((r) => r.json()),
+    request(`/api/payments/apartment/${apartmentId}`).then((r) => r.json()),
 
   createPayment: (data: {
     apartmentId: string;
@@ -232,25 +232,25 @@ export const api = {
     description: string;
     dueDate: string;
   }) =>
-    request("/api/v2/payments", {
+    request("/api/payments", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
   markAsPaid: (id: string) =>
-    request(`/api/v2/payments/${id}/pay`, {
+    request(`/api/payments/${id}/pay`, {
       method: "PATCH",
     }).then((r) => r.json()),
 
   getPendingPayments: () =>
-    request("/api/v2/payments/pending").then((r) => r.json()),
+    request("/api/payments/pending").then((r) => r.json()),
 
   getOverduePayments: () =>
-    request("/api/v2/payments/overdue").then((r) => r.json()),
+    request("/api/payments/overdue").then((r) => r.json()),
 
   // Maintenance
   getMaintenance: (apartmentId: string) =>
-    request(`/api/v2/maintenance/apartment/${apartmentId}`).then((r) => r.json()),
+    request(`/api/maintenance/apartment/${apartmentId}`).then((r) => r.json()),
 
   createMaintenance: (data: {
     apartmentId: string;
@@ -259,7 +259,7 @@ export const api = {
     description: string;
     priority?: string;
   }) =>
-    request("/api/v2/maintenance", {
+    request("/api/maintenance", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
@@ -270,17 +270,17 @@ export const api = {
     assignedTo?: string;
     notes?: string;
   }) =>
-    request(`/api/v2/maintenance/${id}`, {
+    request(`/api/maintenance/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
   getOpenMaintenance: () =>
-    request("/api/v2/maintenance/open").then((r) => r.json()),
+    request("/api/maintenance/open").then((r) => r.json()),
 
   // Common Areas
   getCommonAreas: (activeOnly = true) =>
-    request(`/api/v2/common-areas?activeOnly=${activeOnly}`).then((r) =>
+    request(`/api/common-areas?activeOnly=${activeOnly}`).then((r) =>
       r.json(),
     ),
 
@@ -291,7 +291,7 @@ export const api = {
     location?: string;
     imageUrl?: string;
   }) =>
-    request("/api/v2/common-areas", {
+    request("/api/common-areas", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
@@ -304,13 +304,13 @@ export const api = {
     imageUrl?: string;
     isActive?: boolean;
   }) =>
-    request(`/api/v2/common-areas/${id}`, {
+    request(`/api/common-areas/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
   // Reservations
-  getReservations: () => request("/api/v2/reservations").then((r) => r.json()),
+  getReservations: () => request("/api/reservations").then((r) => r.json()),
 
   createReservation: (data: {
     commonAreaId: string;
@@ -319,17 +319,17 @@ export const api = {
     endTime: string;
     purpose?: string;
   }) =>
-    request("/api/v2/reservations", {
+    request("/api/reservations", {
       method: "POST",
       body: JSON.stringify(data),
     }).then((r) => r.json()),
 
   updateReservation: (id: string, status: string) =>
-    request(`/api/v2/reservations/${id}`, {
+    request(`/api/reservations/${id}`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }).then((r) => r.json()),
 
   // Dashboard
-  getMetrics: () => request("/api/v2/dashboard/metrics").then((r) => r.json()),
+  getMetrics: () => request("/api/dashboard/metrics").then((r) => r.json()),
 };
