@@ -177,93 +177,56 @@ async function apiCall<T>(fn: () => Promise<T>): Promise<{ data: T | null; error
 export const api = {
   // Auth
   login: (data: AuthUser) =>
-    request("/api/v2/auth/login", { method: "POST", body: JSON.stringify(data) }).then(
-      (r) => r.json()
-    ),
+    request("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
   register: (data: AuthUser) =>
-    request("/api/v2/auth/register", { method: "POST", body: JSON.stringify(data) }).then(
-      (r) => r.json()
-    ),
-  me: () => request("/api/v2/auth/me").then((r) => r.json()),
+    request("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  me: () => request("/api/auth/me").then((r) => r.json()),
 
   // Buildings
   getBuildings: () => request("/api/buildings").then((r) => r.json()),
+
+  // Apartments
   getApartments: () => request("/api/apartments").then((r) => r.json()),
 
   // Occupants
   getOccupants: (apartmentId: string) =>
-    request(`/api/v2/apartments/${apartmentId}/occupants`).then((r) => r.json()),
-  createOccupant: (data: Occupant & { apartment_id: string }) =>
-    request("/api/v2/occupants", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
+    request(`/api/v2/occupants/apartment/${apartmentId}`).then((r) => r.json()),
 
   // Payments
   getPayments: (apartmentId: string) =>
-    request(`/api/v2/apartments/${apartmentId}/payments`).then((r) => r.json()),
-  createPayment: (data: Payment & { apartment_id: string }) =>
-    request("/api/v2/payments", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
-  updatePayment: (id: string, data: Partial<Payment>) =>
-    request(`/api/v2/payments/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
+    request(`/api/v2/payments/apartment/${apartmentId}`).then((r) => r.json()),
+
   getPendingPayments: () =>
     request("/api/v2/payments/pending").then((r) => r.json()),
+
   getOverduePayments: () =>
     request("/api/v2/payments/overdue").then((r) => r.json()),
 
   // Maintenance
   getMaintenance: (apartmentId: string) =>
-    request(`/api/v2/apartments/${apartmentId}/maintenance`).then((r) => r.json()),
-  createMaintenance: (data: MaintenanceRequest & { apartment_id: string }) =>
-    request("/api/v2/maintenance", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
-  updateMaintenance: (id: string, data: Partial<MaintenanceRequest>) =>
-    request(`/api/v2/maintenance/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
+    request(`/api/v2/maintenance/apartment/${apartmentId}`).then((r) =>
+      r.json(),
+    ),
+
   getOpenMaintenance: () =>
     request("/api/v2/maintenance/open").then((r) => r.json()),
 
   // Common Areas
-  getCommonAreas: (activeOnly = false) =>
-    request(`/api/v2/common-areas?active_only=${activeOnly}`).then((r) => r.json()),
-  createCommonArea: (data: CommonArea) =>
-    request("/api/v2/common-areas", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
-  updateCommonArea: (id: string, data: Partial<CommonArea>) =>
-    request(`/api/v2/common-areas/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
+  getCommonAreas: (activeOnly = true) =>
+    request(`/api/v2/common-areas?activeOnly=${activeOnly}`).then((r) =>
+      r.json(),
+    ),
 
   // Reservations
-  getReservations: (commonAreaId?: string) => {
-    const url = commonAreaId
-      ? `/api/v2/reservations?common_area_id=${commonAreaId}`
-      : "/api/v2/reservations";
-    return request(url).then((r) => r.json());
-  },
-  createReservation: (data: Reservation & { common_area_id: string }) =>
-    request("/api/v2/reservations", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
-  updateReservation: (id: string, data: Partial<Reservation>) =>
-    request(`/api/v2/reservations/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    }).then((r) => r.json()),
+  getReservations: () => request("/api/v2/reservations").then((r) => r.json()),
 
   // Dashboard
   getMetrics: () => request("/api/v2/dashboard/metrics").then((r) => r.json()),

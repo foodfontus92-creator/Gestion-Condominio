@@ -10,6 +10,7 @@ export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("residente");
+
   const navigate = useNavigate();
   const { login, register, isAuthenticated } = useAuth();
 
@@ -22,6 +23,7 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
     try {
       await login(email, password);
       navigate("/dashboard");
@@ -33,8 +35,15 @@ export default function Login() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
     try {
-      await register({ email, password, full_name: fullName, role });
+      await register({
+        email,
+        password,
+        full_name: fullName,
+        role,
+      });
+
       navigate("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al registrar");
@@ -45,49 +54,32 @@ export default function Login() {
     <div className="h-screen w-screen bg-slate-900 flex items-center justify-center">
       <div className="w-full max-w-md p-8 bg-slate-800 rounded-xl shadow-2xl border border-slate-700">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">{isRegister ? "Crear cuenta" : "Iniciar sesión"}</h2>
+          <h2 className="text-2xl font-bold text-white">
+            {isRegister ? "Crear cuenta" : "Iniciar sesión"}
+          </h2>
+
           <button
             onClick={() => setIsRegister(!isRegister)}
             className="text-blue-400 hover:text-blue-300 text-sm"
           >
-            {isRegister ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate"}
+            {isRegister
+              ? "¿Ya tienes cuenta? Inicia sesión"
+              : "¿No tienes cuenta? Regístrate"}
           </button>
         </div>
 
         {error && (
           <div className="mb-4 p-3 rounded bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center gap-2">
-            <AlertTriangle size={16} /> {error}
+            <AlertTriangle size={16} />
+            {error}
           </div>
         )}
 
-        <form onSubmit={isRegister ? handleRegister : handleLogin} className="space-y-4">
-          {!isRegister && (
-            <>
-              <div className="flex items-center gap-3 pl-3 border-l-4 border-blue-500">
-                <Mail size={20} className="text-blue-400" />
-                <input
-                  type="email"
-                  placeholder="correo@ejemplo.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-              <div className="flex items-center gap-3 pl-3 border-l-4 border-blue-500">
-                <Lock size={20} className="text-blue-400" />
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-            </>
-          )}
-          {isRegister && (
+        <form
+          onSubmit={isRegister ? handleRegister : handleLogin}
+          className="space-y-4"
+        >
+          {isRegister ? (
             <>
               <div className="flex items-center gap-3 pl-3 border-l-4 border-blue-500">
                 <UserIcon size={20} className="text-blue-400" />
@@ -96,10 +88,11 @@ export default function Login() {
                   placeholder="Nombre completo"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white"
                   required
                 />
               </div>
+
               <div className="flex items-center gap-3 pl-3 border-l-4 border-blue-500">
                 <Mail size={20} className="text-blue-400" />
                 <input
@@ -107,10 +100,11 @@ export default function Login() {
                   placeholder="correo@ejemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white"
                   required
                 />
               </div>
+
               <div className="flex items-center gap-3 pl-3 border-l-4 border-blue-500">
                 <Lock size={20} className="text-blue-400" />
                 <input
@@ -118,16 +112,18 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white"
                   required
                 />
               </div>
-              <div className="pl-3">
+
+              <div>
                 <label className="block text-sm text-slate-400 mb-2">Rol</label>
+
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white"
                 >
                   <option value="residente">Residente</option>
                   <option value="portero">Portero</option>
@@ -135,10 +131,37 @@ export default function Login() {
                 </select>
               </div>
             </>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 pl-3 border-l-4 border-blue-500">
+                <Mail size={20} className="text-blue-400" />
+                <input
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pl-3 border-l-4 border-blue-500">
+                <Lock size={20} className="text-blue-400" />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white"
+                  required
+                />
+              </div>
+            </>
           )}
+
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium"
           >
             {isRegister ? "Registrarse" : "Iniciar sesión"}
           </button>
