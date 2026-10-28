@@ -35,7 +35,7 @@ const navItems = [
   { path: "/usuarios", label: "Usuarios", icon: "ShieldAlert", roles: ["admin"] as const },
 ];
 
-export default function Layout() {
+export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { user, logout, hasRole, hasAnyRole } = useAuth();
   const navigate = useNavigate();
