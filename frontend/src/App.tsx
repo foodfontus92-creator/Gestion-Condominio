@@ -15,6 +15,7 @@ import ApartmentPanel from "./components/ApartmentPanel";
 import Maintenance from "./components/Maintenance";
 import CommonAreas from "./components/CommonAreas";
 import Users from "./components/Users";
+import NotFound from "./components/NotFound";
 import { api, type Building, type Apartment } from "./services/api";
 
 function withAuth(Component: React.ComponentType<{}>, allowedRoles?: string[]) {
@@ -161,6 +162,7 @@ export default function App(): JSX.Element {
           <Route path="/areas-comunes" element={<CommonAreasRoute />} />
           <Route path="/usuarios" element={<UsersRoute />} />
           <Route path="/admin" element={<AdminRoute />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

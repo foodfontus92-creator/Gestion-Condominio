@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { api, type DashboardMetrics } from "../services/api";
 import { useAuth } from "../context/AuthContext";
-import { BarChart2, DollarSign, User, AlertCircle, Building, Wrench, Calendar } from "lucide-react";
+import { BarChart2, DollarSign, User, AlertCircle, Building, Wrench, Calendar, Loader2 } from "lucide-react";
 
 const statCards = [
   { label: "Edificios", icon: Building, value: "0", color: "text-blue-400", bg: "bg-blue-500/10" },
@@ -25,6 +25,16 @@ export default function Dashboard() {
   }, [isAuthenticated]);
 
   if (!isAuthenticated) return null;
+
+  // Estado de carga visual - nunca se ve en blanco
+  if (loading) {
+    return (
+      <div className="h-screen w-screen bg-slate-900 flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 text-blue-400 animate-spin" />
+        <p className="mt-4 text-slate-400">Cargando panel de administración...</p>
+      </div>
+    );
+  }
 
   const cards = [
     { ...statCards[0], value: metrics?.total_buildings?.toString() || "0" },
