@@ -120,7 +120,7 @@ export default function Layout() {
         </header>
 
         <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
+          {children}
         </main>
       </div>
     </div>
