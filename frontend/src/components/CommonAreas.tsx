@@ -3,12 +3,17 @@ import { api, type CommonArea, type Reservation } from "../services/api";
 import { Calendar, Plus, Building2, CheckCircle2, Clock } from "lucide-react";
 
 export default function CommonAreas() {
-  const [areas, setAreas] = useState<CommonArea[]>([]);
+  const [areas, setAreas] = useState<CommonArea[]>([
+    { id: "1", name: "Quincho", description: "Área de parrilla con mesas y sillas", capacity: 20, location: "Planta baja", image_url: "", is_active: true, created_at: "" },
+    { id: "2", name: "Gimnasio", description: "Equipos de cardio y pesas", capacity: 10, location: "Planta baja", image_url: "", is_active: true, created_at: "" },
+    { id: "3", name: "Salón de Eventos", description: "Salón cerrado con cocina", capacity: 50, location: "Segundo piso", image_url: "", is_active: true, created_at: "" },
+  ]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [openForm, setOpenForm] = useState(false);
   const [selectedArea, setSelectedArea] = useState<CommonArea | null>(null);
   const [formData, setFormData] = useState({ common_area_id: "", start_time: "", end_time: "", purpose: "" });
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -23,8 +28,10 @@ export default function CommonAreas() {
       ]);
       setAreas(areasData);
       setReservations(reservationsData);
+      setApiError(null);
     } catch (err) {
-      console.error(err);
+      setApiError("No se pudo conectar al servidor. Mostrando datos de ejemplo.");
+      // Mantener los datos de ejemplo iniciales
     } finally {
       setLoading(false);
     }
@@ -39,7 +46,9 @@ export default function CommonAreas() {
       setFormData({ common_area_id: "", start_time: "", end_time: "", purpose: "" });
       setSelectedArea(null);
     } catch (err) {
-      alert("Error al crear reserva");
+      alert("Error al crear reserva. Modo demo - reserva simulada.");
+      setFormData({ common_area_id: "", start_time: "", end_time: "", purpose: "" });
+      setSelectedArea(null);
     }
   };
 
@@ -61,6 +70,11 @@ export default function CommonAreas() {
 
   return (
     <div className="space-y-6">
+      {apiError && (
+        <div className="p-4 rounded-lg border border-yellow-200 bg-yellow-50/50">
+          <p className="text-sm text-yellow-800">{apiError}</p>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Áreas Comunes y Reservas</h2>
         <button
@@ -142,9 +156,7 @@ export default function CommonAreas() {
                           </p>
                         </div>
                         <span
-                          className={`px-2 py-1 rounded text-xs font-bold ${
-                            r.status === "confirmed" ? "bg-green-100 text-green-700" : r.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-700"
-                          }`}
+                          className={`px-2 py-1 rounded text-xs font-bold ${r.status === "confirmed" ? "bg-green-100 text-green-700" : r.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-700"}`}
                         >
                           {r.status}
                         </span>

@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, type Apartment, type Payment, type Occupant } from "../services/api";
 import {
@@ -41,8 +40,8 @@ export default function ApartmentPanel({ apartment, onClose }: ApartmentPanelPro
     if (!apartment) return;
     setLoadingPayments(true);
     Promise.all([
-      api.getPayments(apartment.id),
-      api.getOccupants(apartment.id),
+      api.getPayments(apartment.id).catch(() => []),
+      api.getOccupants(apartment.id).catch(() => []),
     ])
       .then(([p, o]) => {
         setPayments(p);
@@ -52,6 +51,9 @@ export default function ApartmentPanel({ apartment, onClose }: ApartmentPanelPro
   }, [apartment]);
 
   if (!apartment) return null;
+
+  // Corregido: verificar que building_id exista antes de hacer slice
+  const buildingDisplay = apartment.building_id ? apartment.building_id.slice(0, 8) + "..." : "N/A";
 
   const pendingPayments = payments.filter((p) => p.status === "pending");
   const overduePayments = payments.filter((p) => p.status === "overdue");
@@ -70,7 +72,7 @@ export default function ApartmentPanel({ apartment, onClose }: ApartmentPanelPro
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
               <p className="text-xs text-gray-500 uppercase">Bloque</p>
-              <p className="font-mono font-bold">{apartment.building_id.slice(0, 8)}...</p>
+              <p className="font-mono font-bold">{buildingDisplay}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
               <p className="text-xs text-gray-500 uppercase">Estado</p>
@@ -91,6 +93,12 @@ export default function ApartmentPanel({ apartment, onClose }: ApartmentPanelPro
             <div className="flex items-center gap-2 mb-3">
               <UserIcon size={20} className="text-blue-600" />
               <h3 className="font-semibold text-gray-800">Ocupantes</h3>
+              <button
+                onClick={() => navigate("/edificio")}
+                className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
+              >
+                Agregar ocupante
+              </button>
             </div>
             {occupants.length > 0 ? (
               <div className="space-y-2">
@@ -108,7 +116,15 @@ export default function ApartmentPanel({ apartment, onClose }: ApartmentPanelPro
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">Sin ocupantes asignados</p>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-100">
+                <p className="text-sm text-gray-500">Sin ocupantes asignados</p>
+                <button
+                  onClick={() => navigate("/edificio")}
+                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
+                >
+                  Agregar
+                </button>
+              </div>
             )}
           </div>
 
