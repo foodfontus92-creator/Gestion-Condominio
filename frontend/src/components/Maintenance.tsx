@@ -7,7 +7,7 @@ export default function Maintenance() {
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [openForm, setOpenForm] = useState(false);
-  const [formData, setFormData] = useState({ title: "", description: "", priority: "medium" as const, apartment_id: "" });
+  const [formData, setFormData] = useState({ title: "", description: "", priority: "medium" as const, apartmentId: "" });
   const { user } = useAuth();
 
   useEffect(() => {
@@ -20,8 +20,7 @@ export default function Maintenance() {
       const data = await api.getOpenMaintenance();
       setRequests(data);
     } catch (err) {
-      // Try all maintenance if open endpoint fails
-      const data = await api.getReservations(); // fallback
+      console.error("Error loading maintenance:", err);
       setRequests([]);
     } finally {
       setLoading(false);
@@ -32,11 +31,15 @@ export default function Maintenance() {
     e.preventDefault();
     setOpenForm(false);
     try {
-      await api.createMaintenance({ ...formData, apartment_id: formData.apartment_id });
+      await api.createMaintenance({
+        ...formData,
+        apartmentId: formData.apartmentId,
+        reportedById: user?.id || "",
+      });
       await loadRequests();
-      setFormData({ title: "", description: "", priority: "medium", apartment_id: "" });
+      setFormData({ title: "", description: "", priority: "medium", apartmentId: "" });
     } catch (err) {
-      alert("Error al crear mantenimiento");
+      alert("Error al crear reporte de mantenimiento");
     }
   };
 
@@ -93,7 +96,7 @@ export default function Maintenance() {
                     <p className="text-xs text-gray-500">{r.description}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="font-mono text-sm text-gray-600">{r.apartment_id.slice(0, 6)}...</span>
+                    <span className="font-mono text-sm text-gray-600">{r.apartmentId.slice(0, 6)}...</span>
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -108,7 +111,7 @@ export default function Maintenance() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-500">
-                    {new Date(r.reported_at).toLocaleDateString("es-ES")}
+                    {new Date(r.reportedAt).toLocaleDateString("es-ES")}
                   </td>
                 </tr>
               ))}
@@ -160,8 +163,8 @@ export default function Maintenance() {
                 <input
                   type="text"
                   required
-                  value={formData.apartment_id}
-                  onChange={(e) => setFormData({ ...formData, apartment_id: e.target.value })}
+                  value={formData.apartmentId}
+                  onChange={(e) => setFormData({ ...formData, apartmentId: e.target.value })}
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   placeholder="UUID del departamento"
                 />

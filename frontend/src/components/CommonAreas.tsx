@@ -4,15 +4,15 @@ import { Calendar, Plus, Building2, CheckCircle2, Clock } from "lucide-react";
 
 export default function CommonAreas() {
   const [areas, setAreas] = useState<CommonArea[]>([
-    { id: "1", name: "Quincho", description: "Área de parrilla con mesas y sillas", capacity: 20, location: "Planta baja", image_url: "", is_active: true, created_at: "" },
-    { id: "2", name: "Gimnasio", description: "Equipos de cardio y pesas", capacity: 10, location: "Planta baja", image_url: "", is_active: true, created_at: "" },
-    { id: "3", name: "Salón de Eventos", description: "Salón cerrado con cocina", capacity: 50, location: "Segundo piso", image_url: "", is_active: true, created_at: "" },
+    { id: "1", name: "Quincho", description: "Área de parrilla con mesas y sillas", capacity: 20, location: "Planta baja", imageUrl: "", isActive: true, createdAt: "" },
+    { id: "2", name: "Gimnasio", description: "Equipos de cardio y pesas", capacity: 10, location: "Planta baja", image_url: "", isActive: true, createdAt: "" },
+    { id: "3", name: "Salón de Eventos", description: "Salón cerrado con cocina", capacity: 50, location: "Segundo piso", image_url: "", isActive: true, createdAt: "" },
   ]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [openForm, setOpenForm] = useState(false);
   const [selectedArea, setSelectedArea] = useState<CommonArea | null>(null);
-  const [formData, setFormData] = useState({ common_area_id: "", start_time: "", end_time: "", purpose: "" });
+  const [formData, setFormData] = useState({ commonAreaId: "", startTime: "", endTime: "", purpose: "" });
   const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,27 +41,27 @@ export default function CommonAreas() {
     e.preventDefault();
     setOpenForm(false);
     try {
-      await api.createReservation({ ...formData, common_area_id: formData.common_area_id });
+      await api.createReservation({ ...formData, commonAreaId: formData.commonAreaId });
       await loadData();
-      setFormData({ common_area_id: "", start_time: "", end_time: "", purpose: "" });
+      setFormData({ commonAreaId: "", startTime: "", endTime: "", purpose: "" });
       setSelectedArea(null);
     } catch (err) {
       alert("Error al crear reserva. Modo demo - reserva simulada.");
-      setFormData({ common_area_id: "", start_time: "", end_time: "", purpose: "" });
+      setFormData({ commonAreaId: "", startTime: "", endTime: "", purpose: "" });
       setSelectedArea(null);
     }
   };
 
   const areaReservations = (areaId: string) =>
-    reservations.filter((r) => r.common_area_id === areaId && r.status !== "cancelled");
+    reservations.filter((r) => r.commonAreaId === areaId && r.status !== "cancelled");
 
   const isAvailable = (areaId: string, start: string, end: string) => {
     const areaRes = areaReservations(areaId);
     const startTime = new Date(start).getTime();
     const endTime = new Date(end).getTime();
     return !areaRes.some((r) => {
-      const rStart = new Date(r.start_time).getTime();
-      const rEnd = new Date(r.end_time).getTime();
+      const rStart = new Date(r.startTime).getTime();
+      const rEnd = new Date(r.endTime).getTime();
       return startTime < rEnd && endTime > rStart;
     });
   };
@@ -125,8 +125,8 @@ export default function CommonAreas() {
                   <Building2 size={24} className="text-blue-500" />
                   <h3 className="font-bold text-white">{area.name}</h3>
                 </div>
-                <span className={`px-2 py-1 rounded text-xs font-bold ${area.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                  {area.is_active ? "Activa" : "Inactiva"}
+                <span className={`px-2 py-1 rounded text-xs font-bold ${area.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                  {area.isActive ? "Activa" : "Inactiva"}
                 </span>
               </div>
               <p className="text-sm text-gray-400 mb-3">{area.description || "Sin descripción"}</p>
@@ -152,7 +152,7 @@ export default function CommonAreas() {
                         <div className="flex-1">
                           <p className="text-sm text-gray-200">{r.purpose || "Reserva"}</p>
                           <p className="text-xs text-gray-500">
-                            {new Date(r.start_time).toLocaleDateString("es-ES")} {new Date(r.start_time).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                            {new Date(r.startTime).toLocaleDateString("es-ES")} {new Date(r.startTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                           </p>
                         </div>
                         <span
@@ -173,15 +173,15 @@ export default function CommonAreas() {
                     <input
                       type="hidden"
                       value={area.id}
-                      onChange={(e) => setFormData({ ...formData, common_area_id: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, commonAreaId: e.target.value })}
                     />
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-1">Fecha y hora inicio</label>
                       <input
                         type="datetime-local"
                         required
-                        value={formData.start_time}
-                        onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                        value={formData.startTime}
+                        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                         className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       />
                     </div>
@@ -190,8 +190,8 @@ export default function CommonAreas() {
                       <input
                         type="datetime-local"
                         required
-                        value={formData.end_time}
-                        onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                        value={formData.endTime}
+                        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                         className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       />
                     </div>
@@ -206,16 +206,16 @@ export default function CommonAreas() {
                     </div>
                     <button
                       type="submit"
-                      disabled={!isAvailable(area.id, formData.start_time, formData.end_time)}
+                      disabled={!isAvailable(area.id, formData.startTime, formData.endTime)}
                       className={`w-full py-2 rounded-lg font-medium transition-colors ${
-                        !isAvailable(area.id, formData.start_time, formData.end_time)
+                        !isAvailable(area.id, formData.startTime, formData.endTime)
                           ? "bg-gray-500 text-gray-300"
                           : "bg-blue-600 hover:bg-blue-700 text-white"
                       }`}
                     >
                       Reservar
                     </button>
-                    {!isAvailable(area.id, formData.start_time, formData.end_time) && (
+                    {!isAvailable(area.id, formData.startTime, formData.endTime) && (
                       <p className="text-xs text-red-500 mt-1">Horario no disponible</p>
                     )}
                   </form>

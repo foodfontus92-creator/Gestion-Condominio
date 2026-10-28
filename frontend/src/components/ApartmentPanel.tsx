@@ -26,7 +26,7 @@ export default function ApartmentPanel({ apartment, onClose }: ApartmentPanelPro
   const markAsPaid = async (paymentId: string) => {
     setLoadingPayments(true);
     try {
-      await api.updatePayment(paymentId, { status: "paid" });
+      await api.markAsPaid(paymentId);
       const updated = await api.getPayments(apartment!.id);
       setPayments(updated);
     } catch (err) {
@@ -52,8 +52,8 @@ export default function ApartmentPanel({ apartment, onClose }: ApartmentPanelPro
 
   if (!apartment) return null;
 
-  // Corregido: verificar que building_id exista antes de hacer slice
-  const buildingDisplay = apartment.building_id ? apartment.building_id.slice(0, 8) + "..." : "N/A";
+  // Corregido: usar buildingId (camelCase del backend) en lugar de building_id
+  const buildingDisplay = apartment.buildingId ? apartment.buildingId.slice(0, 8) + "..." : "N/A";
 
   const pendingPayments = payments.filter((p) => p.status === "pending");
   const overduePayments = payments.filter((p) => p.status === "overdue");
@@ -105,8 +105,8 @@ export default function ApartmentPanel({ apartment, onClose }: ApartmentPanelPro
                 {occupants.map((occ) => (
                   <div key={occ.id} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-100">
                     <div>
-                      <p className="font-medium text-gray-800">{occ.full_name}</p>
-                      <p className="text-xs text-gray-500">{occ.occupant_type === "owner" ? "Propietario" : "Inquilino"}</p>
+                      <p className="font-medium text-gray-800">{occ.fullName}</p>
+                      <p className="text-xs text-gray-500">{occ.occupantType === "owner" ? "Propietario" : "Inquilino"}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium">{occ.phone || "—"}</p>
@@ -147,7 +147,7 @@ export default function ApartmentPanel({ apartment, onClose }: ApartmentPanelPro
                     <div key={p.id} className="flex items-center justify-between p-3 rounded border">
                       <div className="flex-1">
                         <p className="font-medium text-gray-800">{p.description}</p>
-                        <p className="text-xs text-gray-500">Vence: {new Date(p.due_date).toLocaleDateString("es-ES")}</p>
+                        <p className="text-xs text-gray-500">Vence: {new Date(p.dueDate).toLocaleDateString("es-ES")}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className={`text-xs font-bold px-2 py-1 rounded ${

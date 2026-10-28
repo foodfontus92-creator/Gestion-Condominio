@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -40,11 +40,11 @@ const MOCK_BUILDINGS: Building[] = [
     status: "active",
     apartments: Array.from({ length: 9 }, (_, i) => ({
       id: `mock-1-apt-${101 + i}`,
-      building_id: "mock-1",
+      buildingId: "mock-1",
       number: 101 + i,
       status: "active",
-      occupants: i < 3 ? [{ id: "o1", full_name: "Juan Pérez", document_id: "", phone: "", email: "", occupant_type: "owner", is_primary: true, apartment_id: "mock-1", created_at: "" }] : [],
-      payments: i === 0 ? [{ id: "p1", apartment_id: "mock-1", amount: 100, description: "Enero", due_date: new Date().toISOString(), paid_date: undefined, status: "pending", payment_method: "", reference: "", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }] : [],
+      occupants: i < 3 ? [{ id: "o1", apartmentId: "mock-1", fullName: "Juan Pérez", documentId: "", phone: "", email: "", occupantType: "owner", isPrimary: true, createdAt: "" }] : [],
+      payments: i === 0 ? [{ id: "p1", apartmentId: "mock-1", amount: 100, description: "Enero", dueDate: new Date().toISOString(), paidDate: undefined, status: "pending", paymentMethod: "", reference: "", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }] : [],
     })),
   },
   {
@@ -53,7 +53,7 @@ const MOCK_BUILDINGS: Building[] = [
     status: "active",
     apartments: Array.from({ length: 9 }, (_, i) => ({
       id: `mock-2-apt-${101 + i}`,
-      building_id: "mock-2",
+      buildingId: "mock-2",
       number: 101 + i,
       status: "active",
       occupants: [],
@@ -66,7 +66,7 @@ const MOCK_BUILDINGS: Building[] = [
     status: "active",
     apartments: Array.from({ length: 9 }, (_, i) => ({
       id: `mock-3-apt-${101 + i}`,
-      building_id: "mock-3",
+      buildingId: "mock-3",
       number: 101 + i,
       status: i % 3 === 0 ? "suppressed" : "active",
       occupants: [],

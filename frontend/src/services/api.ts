@@ -9,52 +9,51 @@ export type Building = {
 
 export type Apartment = {
   id: string;
-  building_id: string;
+  buildingId: string;
   number: number;
   status: string;
-  monthly_fee?: number;
+  monthlyFee?: number;
   occupants?: Occupant[];
   payments?: Payment[];
-  maintenance_requests?: MaintenanceRequest[];
 };
 
 export type Occupant = {
   id: string;
-  apartment_id: string;
-  full_name: string;
-  document_id?: string;
+  apartmentId: string;
+  fullName: string;
+  documentId?: string;
   phone?: string;
   email?: string;
-  occupant_type: string;
-  is_primary: boolean;
-  created_at: string;
+  occupantType: string;
+  isPrimary: boolean;
+  createdAt: string;
 };
 
 export type Payment = {
   id: string;
-  apartment_id: string;
+  apartmentId: string;
   amount: number;
   description: string;
-  due_date: string;
-  paid_date?: string;
+  dueDate: string;
+  paidDate?: string;
   status: "pending" | "paid" | "overdue";
-  payment_method?: string;
+  paymentMethod?: string;
   reference?: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type MaintenanceRequest = {
   id: string;
-  apartment_id: string;
-  reported_by_id: string;
+  apartmentId: string;
+  reportedById: string;
   title: string;
   description: string;
   status: "open" | "in_progress" | "closed";
   priority: "low" | "medium" | "high" | "urgent";
-  reported_at: string;
-  resolved_at?: string;
-  assigned_to?: string;
+  reportedAt: string;
+  resolvedAt?: string;
+  assignedTo?: string;
   notes?: string;
 };
 
@@ -64,52 +63,52 @@ export type CommonArea = {
   description?: string;
   capacity: number;
   location?: string;
-  image_url?: string;
-  is_active: boolean;
-  created_at: string;
+  imageUrl?: string;
+  isActive: boolean;
+  createdAt: string;
 };
 
 export type Reservation = {
   id: string;
-  common_area_id: string;
-  user_id: string;
-  start_time: string;
-  end_time: string;
+  commonAreaId: string;
+  userId: string;
+  startTime: string;
+  endTime: string;
   status: "pending" | "confirmed" | "cancelled" | "completed";
   purpose?: string;
-  created_at: string;
+  createdAt: string;
 };
 
 export type User = {
   id: string;
   email: string;
-  full_name: string;
+  fullName: string;
   role: "admin" | "residente" | "portero";
-  is_active: boolean;
-  apartment_id?: string;
+  isActive: boolean;
+  apartmentId?: string;
 };
 
 export type DashboardMetrics = {
-  total_buildings: number;
-  total_apartments: number;
-  active_apartments: number;
-  suppressed_apartments: number;
-  occupied_apartments: number;
-  vacant_apartments: number;
-  pending_payments: number;
-  overdue_payments: number;
-  open_maintenance: number;
-  closed_maintenance: number;
-  total_common_areas: number;
-  confirmed_reservations: number;
+  totalBuildings: number;
+  totalApartments: number;
+  activeApartments: number;
+  suppressedApartments: number;
+  occupiedApartments: number;
+  vacantApartments: number;
+  pendingPayments: number;
+  overduePayments: number;
+  openMaintenance: number;
+  closedMaintenance: number;
+  totalCommonAreas: number;
+  confirmedReservations: number;
 };
 
 type AuthUser = {
   email: string;
   password: string;
-  full_name?: string;
+  fullName?: string;
   role?: string;
-  apartment_id?: string;
+  apartmentId?: string;
 };
 
 export type ApiError = {
@@ -121,7 +120,7 @@ export type ApiError = {
 async function request(path: string, options: RequestInit = {}): Promise<Response> {
   const token = localStorage.getItem("token");
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {
@@ -158,22 +157,6 @@ async function request(path: string, options: RequestInit = {}): Promise<Respons
   }
 }
 
-// Helper para envolver llamadas a la API con manejo de errores
-async function apiCall<T>(fn: () => Promise<T>): Promise<{ data: T | null; error: ApiError | null }> {
-  try {
-    const data = await fn();
-    return { data, error: null };
-  } catch (err: any) {
-    return {
-      data: null,
-      error: {
-        message: err.message || "Error desconocido",
-        isNetworkError: err.message.includes("conectar") || err.message.includes("timeout"),
-      },
-    };
-  }
-}
-
 export const api = {
   // Auth
   login: (data: AuthUser) =>
@@ -193,16 +176,71 @@ export const api = {
   // Buildings
   getBuildings: () => request("/api/buildings").then((r) => r.json()),
 
-  // Apartments
-  getApartments: () => request("/api/apartments").then((r) => r.json()),
+  // Apartments (by building)
+  getApartmentsByBuilding: (buildingId: string) =>
+    request(`/api/apartments/building/${buildingId}`).then((r) => r.json()),
+
+  // Apartments suppress
+  suppressApartment: (apartmentId: string) =>
+    request(`/api/apartments/${apartmentId}/suppress`, {
+      method: "PATCH",
+    }).then((r) => r.json()),
 
   // Occupants
   getOccupants: (apartmentId: string) =>
     request(`/api/v2/occupants/apartment/${apartmentId}`).then((r) => r.json()),
 
+  createOccupant: (data: {
+    apartmentId: string;
+    fullName: string;
+    documentId?: string;
+    phone?: string;
+    email?: string;
+    occupantType?: string;
+    isPrimary?: boolean;
+  }) =>
+    request("/api/v2/occupants", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  updateOccupant: (id: string, data: {
+    fullName?: string;
+    documentId?: string;
+    phone?: string;
+    email?: string;
+    occupantType?: string;
+    isPrimary?: boolean;
+  }) =>
+    request(`/api/v2/occupants/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  deleteOccupant: (id: string) =>
+    request(`/api/v2/occupants/${id}`, {
+      method: "DELETE",
+    }).then((r) => r.json()),
+
   // Payments
   getPayments: (apartmentId: string) =>
     request(`/api/v2/payments/apartment/${apartmentId}`).then((r) => r.json()),
+
+  createPayment: (data: {
+    apartmentId: string;
+    amount: number;
+    description: string;
+    dueDate: string;
+  }) =>
+    request("/api/v2/payments", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  markAsPaid: (id: string) =>
+    request(`/api/v2/payments/${id}/pay`, {
+      method: "PATCH",
+    }).then((r) => r.json()),
 
   getPendingPayments: () =>
     request("/api/v2/payments/pending").then((r) => r.json()),
@@ -212,9 +250,30 @@ export const api = {
 
   // Maintenance
   getMaintenance: (apartmentId: string) =>
-    request(`/api/v2/maintenance/apartment/${apartmentId}`).then((r) =>
-      r.json(),
-    ),
+    request(`/api/v2/maintenance/apartment/${apartmentId}`).then((r) => r.json()),
+
+  createMaintenance: (data: {
+    apartmentId: string;
+    reportedById: string;
+    title: string;
+    description: string;
+    priority?: string;
+  }) =>
+    request("/api/v2/maintenance", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  updateMaintenance: (id: string, data: {
+    status?: string;
+    priority?: string;
+    assignedTo?: string;
+    notes?: string;
+  }) =>
+    request(`/api/v2/maintenance/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
 
   getOpenMaintenance: () =>
     request("/api/v2/maintenance/open").then((r) => r.json()),
@@ -225,12 +284,52 @@ export const api = {
       r.json(),
     ),
 
+  createCommonArea: (data: {
+    name: string;
+    description?: string;
+    capacity?: number;
+    location?: string;
+    imageUrl?: string;
+  }) =>
+    request("/api/v2/common-areas", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  updateCommonArea: (id: string, data: {
+    name?: string;
+    description?: string;
+    capacity?: number;
+    location?: string;
+    imageUrl?: string;
+    isActive?: boolean;
+  }) =>
+    request(`/api/v2/common-areas/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
   // Reservations
   getReservations: () => request("/api/v2/reservations").then((r) => r.json()),
 
+  createReservation: (data: {
+    commonAreaId: string;
+    userId: string;
+    startTime: string;
+    endTime: string;
+    purpose?: string;
+  }) =>
+    request("/api/v2/reservations", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  updateReservation: (id: string, status: string) =>
+    request(`/api/v2/reservations/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }).then((r) => r.json()),
+
   // Dashboard
   getMetrics: () => request("/api/v2/dashboard/metrics").then((r) => r.json()),
-
-  // Helper
-  apiCall,
 };

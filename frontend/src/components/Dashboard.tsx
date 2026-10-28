@@ -38,17 +38,13 @@ export default function Dashboard() {
     navigate(path);
   };
 
-  const notificationBadgeColor = (type: string) => {
-    return type === "maintenance" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700";
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2">Panel de Administración</h2>
           <p className="text-slate-400">
-            Bienvenido, {user?.full_name}. Aquí tienes el resumen del condominio.
+            Bienvenido, {user?.fullName}. Aquí tienes el resumen del condominio.
           </p>
         </div>
         <div className="flex gap-2">
@@ -187,7 +183,7 @@ export default function Dashboard() {
                   <p className="text-sm font-medium text-white">{n.title}</p>
                   <p className="text-xs text-slate-400">{n.building} · {n.date}</p>
                 </div>
-                <span className={`px-2 py-1 rounded text-xs font-bold ${notificationBadgeColor(n.type)}`}>
+                <span className={`px-2 py-1 rounded text-xs font-bold ${n.type === "maintenance" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}`}>
                   {n.type === "maintenance" ? "Mantenimiento" : "Reunión"}
                 </span>
               </div>
