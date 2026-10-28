@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
   Building2,
@@ -40,6 +40,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout, hasRole, hasAnyRole } = useAuth();
   const navigate = useNavigate();
 
+  const navigateToDashboard = () => {
+    navigate("/dashboard");
+    setSidebarOpen(false);
+  };
+
   const filteredNav = navItems.filter((item) => hasAnyRole(item.roles));
   const IconComponent = (iconName: string) => IconMap[iconName] || Building2;
 
@@ -52,10 +57,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }`}
       >
         <div className="h-16 flex items-center justify-between px-6 border-b border-slate-700">
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
+          <button
+            onClick={navigateToDashboard}
+            className="flex items-center gap-2 text-white hover:bg-slate-700/50 rounded-lg p-2 transition-colors"
+          >
             <Building2 size={24} className="text-blue-500" />
             <span>Condominio 3D</span>
-          </h1>
+          </button>
           <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-white">
             <X size={20} />
           </button>
@@ -105,9 +113,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             >
               <Menu size={24} />
             </button>
-            <h1 className="text-lg font-bold text-white">
-              {filteredNav.find((n) => n.path === window.location.pathname)?.label || "Condominio"}
-            </h1>
+            <button
+              onClick={navigateToDashboard}
+              className="flex items-center gap-2 text-white hover:bg-slate-700/50 rounded-lg p-2 transition-colors"
+            >
+              <Building2 size={20} className="text-blue-500" />
+              <span className="text-lg font-bold">
+                {filteredNav.find((n) => n.path === window.location.pathname)?.label || "Condominio"}
+              </span>
+            </button>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-400 hidden md:block">
