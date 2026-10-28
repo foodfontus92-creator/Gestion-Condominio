@@ -32,11 +32,54 @@ function getApartmentColor(apt: Apartment): number {
   return COLORS.vacant;
 }
 
+// Edificios de ejemplo para que el condominio 3D siempre se vea
+const MOCK_BUILDINGS: Building[] = [
+  {
+    id: "mock-1",
+    code: "A",
+    status: "active",
+    apartments: Array.from({ length: 9 }, (_, i) => ({
+      id: `mock-1-apt-${101 + i}`,
+      building_id: "mock-1",
+      number: 101 + i,
+      status: "active",
+      occupants: i < 3 ? [{ id: "o1", full_name: "Juan Pérez", document_id: "", phone: "", email: "", occupant_type: "owner", is_primary: true, apartment_id: "mock-1", created_at: "" }] : [],
+      payments: i === 0 ? [{ id: "p1", apartment_id: "mock-1", amount: 100, description: "Enero", due_date: new Date().toISOString(), paid_date: undefined, status: "pending", payment_method: "", reference: "", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }] : [],
+    })),
+  },
+  {
+    id: "mock-2",
+    code: "B",
+    status: "active",
+    apartments: Array.from({ length: 9 }, (_, i) => ({
+      id: `mock-2-apt-${101 + i}`,
+      building_id: "mock-2",
+      number: 101 + i,
+      status: "active",
+      occupants: [],
+      payments: [],
+    })),
+  },
+  {
+    id: "mock-3",
+    code: "C",
+    status: "active",
+    apartments: Array.from({ length: 9 }, (_, i) => ({
+      id: `mock-3-apt-${101 + i}`,
+      building_id: "mock-3",
+      number: 101 + i,
+      status: i % 3 === 0 ? "suppressed" : "active",
+      occupants: [],
+      payments: [],
+    })),
+  },
+];
+
 const EmptyBuildings = () => (
   <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-slate-400">
     <div className="text-4xl mb-4">🏢</div>
-    <h3 className="text-lg font-medium">No hay edificios cargados</h3>
-    <p className="text-sm">No se pudieron cargar los edificios del condominio.</p>
+    <h3 className="text-lg font-medium">Condominio 3D (vista de ejemplo)</h3>
+    <p className="text-sm">Mostrando edificios de ejemplo.</p>
   </div>
 );
 
@@ -88,9 +131,12 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
   const [activeBuilding, setActiveBuilding] = useState<Building | null>(null);
   const cameraRef = useRef<THREE.Camera>(null!);
 
+  // Usar edificios del backend o edificios de ejemplo para que siempre se vea el 3D
+  const displayBuildings = buildings.length > 0 ? buildings : MOCK_BUILDINGS;
+
   // Auto-seleccionar el primer edificio al cargar
-  if (buildings.length > 0 && !activeBuilding) {
-    setActiveBuilding(buildings[0]);
+  if (displayBuildings.length > 0 && !activeBuilding) {
+    setActiveBuilding(displayBuildings[0]);
   }
 
   const building = activeBuilding;
@@ -103,7 +149,9 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
     apartmentsByFloor[floor].push(apt);
   });
 
-  if (!buildings || buildings.length === 0 || !building) {
+  const isMock = buildings.length === 0;
+
+  if (!displayBuildings || displayBuildings.length === 0 || !building) {
     return (
       <div className="h-full w-full bg-slate-900 flex flex-col">
         <div className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-6 z-20">
@@ -125,10 +173,10 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
           <span className="text-sm text-slate-400">Bloque:</span>
           <select
             value={building.code}
-            onChange={(e) => setActiveBuilding(buildings.find((b) => b.code === e.target.value) || null)}
+            onChange={(e) => setActiveBuilding(displayBuildings.find((b) => b.code === e.target.value) || null)}
             className="bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white text-sm"
           >
-            {buildings.map((b) => (
+            {displayBuildings.map((b) => (
               <option key={b.id} value={b.code}>
                 Bloque {b.code}
               </option>
@@ -153,6 +201,7 @@ export default function Building3D({ buildings, onApartmentSelect }: Building3DP
         </div>
         <div className="text-sm text-slate-400">
           {building.code} - Piso {selectedFloor + 1} - {apartmentsByFloor[selectedFloor]?.length || 0} departamentos
+          {isMock && <span className="ml-2 text-xs text-yellow-400">(ejemplo)</span>}
         </div>
       </div>
 
