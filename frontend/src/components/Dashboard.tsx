@@ -11,18 +11,8 @@ import {
   Plus,
   PlusCircle,
   Bell,
-  FileText,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-const statCards = [
-  { label: "Edificios", icon: Building, value: "5", color: "text-blue-400", bg: "bg-blue-500/10" },
-  { label: "Departamentos", icon: User, value: "45", color: "text-green-400", bg: "bg-green-500/10" },
-  { label: "Expensas Pendientes", icon: DollarSign, value: "3", color: "text-yellow-400", bg: "bg-yellow-500/10" },
-  { label: "Expensas Vencidas", icon: AlertCircle, value: "2", color: "text-red-400", bg: "bg-red-500/10" },
-  { label: "Mantenimientos Abiertos", icon: Wrench, value: "1", color: "text-orange-400", bg: "bg-orange-500/10" },
-  { label: "Reservas Confirmadas", icon: Calendar, value: "2", color: "text-purple-400", bg: "bg-purple-500/10" },
-];
 
 export default function Dashboard() {
   const { isAuthenticated, user, hasRole } = useAuth();
@@ -46,6 +36,10 @@ export default function Dashboard() {
 
   const navigateTo = (path: string) => {
     navigate(path);
+  };
+
+  const notificationBadgeColor = (type: string) => {
+    return type === "maintenance" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700";
   };
 
   return (
@@ -172,7 +166,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Notificaciones Panel (Solo Admin) */}
       {hasRole("admin") && (
         <div className="p-6 rounded-xl border border-purple-500/30 bg-purple-500/10">
           <div className="flex items-center justify-between mb-4">
@@ -191,14 +184,10 @@ export default function Dashboard() {
             {notifications.map((n) => (
               <div key={n.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded border border-slate-700/50">
                 <div>
-                  <p className="text-sm font-medium text-white">{n.title}</span>
+                  <p className="text-sm font-medium text-white">{n.title}</p>
                   <p className="text-xs text-slate-400">{n.building} · {n.date}</p>
                 </div>
-                <span
-                  className={`px-2 py-1 rounded text-xs font-bold ${
-                    n.type === "maintenance" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
-                  }`}
-                >
+                <span className={`px-2 py-1 rounded text-xs font-bold ${notificationBadgeColor(n.type)}`}>
                   {n.type === "maintenance" ? "Mantenimiento" : "Reunión"}
                 </span>
               </div>
@@ -210,7 +199,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Notificación Modal */}
       {showNotificationModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowNotificationModal(false)}>
           <div className="bg-white text-black w-full max-w-md p-6 rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
